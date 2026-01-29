@@ -10,12 +10,17 @@ export function TVGlitch() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const lastGlitchRef = useRef<GlitchType>("vhsTracking");
 
-  const playStaticNoise = (duration: number) => {
+  const playStaticNoise = async (duration: number) => {
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext();
     }
 
     const ctx = audioContextRef.current;
+
+    // Resume if suspended (required by browsers)
+    if (ctx.state === "suspended") {
+      await ctx.resume();
+    }
 
     // Create noise buffer
     const bufferSize = ctx.sampleRate * duration;
@@ -47,6 +52,32 @@ export function TVGlitch() {
     noise.start();
     noise.stop(ctx.currentTime + duration);
   };
+
+  // Initialize audio context on first user interaction
+  useEffect(() => {
+    const initAudio = () => {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new AudioContext();
+      }
+      if (audioContextRef.current.state === "suspended") {
+        audioContextRef.current.resume();
+      }
+      // Remove listeners after first interaction
+      window.removeEventListener("click", initAudio);
+      window.removeEventListener("touchstart", initAudio);
+      window.removeEventListener("keydown", initAudio);
+    };
+
+    window.addEventListener("click", initAudio);
+    window.addEventListener("touchstart", initAudio);
+    window.addEventListener("keydown", initAudio);
+
+    return () => {
+      window.removeEventListener("click", initAudio);
+      window.removeEventListener("touchstart", initAudio);
+      window.removeEventListener("keydown", initAudio);
+    };
+  }, []);
 
   useEffect(() => {
     const triggerGlitch = () => {
