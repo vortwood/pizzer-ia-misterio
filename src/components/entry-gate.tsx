@@ -10,9 +10,12 @@ interface EntryGateProps {
 
 export function EntryGate({ children, onEnter }: EntryGateProps) {
   const [hasEntered, setHasEntered] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(0);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   const handleEnter = () => {
+    if (selectedOption !== 0) return;
+
     // Initialize audio context on user interaction
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext();
@@ -32,131 +35,193 @@ export function EntryGate({ children, onEnter }: EntryGateProps) {
           <motion.div
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
-            className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="fixed inset-0 z-[100] flex items-center justify-center"
+            style={{
+              backgroundColor: "#0a0a12",
+            }}
           >
-            {/* Noise texture overlay */}
-            <div
-              className="absolute inset-0 opacity-[0.03] pointer-events-none"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-              }}
-            />
-
-            {/* Vignette effect */}
+            {/* CRT curvature effect */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  "radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.6) 100%)",
+                  "radial-gradient(ellipse 80% 80% at 50% 50%, transparent 0%, rgba(0,0,0,0.4) 100%)",
               }}
             />
 
-            {/* Content */}
+            {/* Blue CRT glow */}
+            <div
+              className="absolute inset-0 pointer-events-none opacity-30"
+              style={{
+                background:
+                  "radial-gradient(ellipse 60% 60% at 50% 50%, rgba(30,60,120,0.3) 0%, transparent 70%)",
+              }}
+            />
+
+            {/* Content container - styled like old TV menu */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-              className="relative z-10 flex flex-col items-center text-center px-6 max-w-md"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="relative z-10 w-full max-w-lg mx-4"
             >
-              {/* Mysterious symbol */}
-              <motion.div
-                animate={{
-                  opacity: [0.4, 0.7, 0.4],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className="mb-8 text-6xl select-none"
+              {/* Menu box */}
+              <div
+                className="relative p-1"
                 style={{
-                  fontWeight: 200,
-                  color: "rgba(255,255,255,0.15)",
-                  textShadow: "0 0 30px rgba(255,255,255,0.1)",
+                  fontFamily: "'Courier New', Courier, monospace",
                 }}
               >
-                ?
-              </motion.div>
+                {/* Outer border */}
+                <div className="border-2 border-white/40 p-1">
+                  {/* Inner border */}
+                  <div className="border border-white/20 bg-black/60 p-6 sm:p-8">
+                    {/* Header */}
+                    <div className="text-center mb-6">
+                      <motion.div
+                        animate={{ opacity: [0.7, 1, 0.7] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="text-white/90 text-xs sm:text-sm tracking-[0.3em] uppercase mb-2"
+                      >
+                        ══════ SISTEMA ══════
+                      </motion.div>
+                      <div
+                        className="text-white text-lg sm:text-xl tracking-wider"
+                        style={{
+                          textShadow: "0 0 10px rgba(255,255,255,0.5)",
+                        }}
+                      >
+                        ADVERTENCIA
+                      </div>
+                    </div>
 
-              {/* Question text */}
-              <h2
-                className="text-white/80 mb-3 select-none"
-                style={{
-                  fontSize: "clamp(1.1rem, 4vw, 1.4rem)",
-                  fontWeight: 300,
-                  letterSpacing: "0.05em",
-                  lineHeight: 1.4,
-                }}
-              >
-                ¿Estás listo para descubrir
-              </h2>
-              <h2
-                className="text-white mb-10 select-none"
-                style={{
-                  fontSize: "clamp(1.1rem, 4vw, 1.4rem)",
-                  fontWeight: 400,
-                  letterSpacing: "0.05em",
-                  lineHeight: 1.4,
-                }}
-              >
-                este misterio?
-              </h2>
+                    {/* Message */}
+                    <div className="text-center mb-8 space-y-2">
+                      <p className="text-white/70 text-sm sm:text-base">
+                        ¿Estás seguro de que
+                      </p>
+                      <p className="text-white/70 text-sm sm:text-base">
+                        quieres entrar en
+                      </p>
+                      <p
+                        className="text-white text-sm sm:text-base"
+                        style={{
+                          textShadow: "0 0 8px rgba(255,255,255,0.4)",
+                        }}
+                      >
+                        este misterio?
+                      </p>
+                    </div>
 
-              {/* Enter button */}
-              <motion.button
-                onClick={handleEnter}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="relative group cursor-pointer"
-              >
-                {/* Button glow */}
-                <div className="absolute inset-0 bg-white/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    {/* Menu options */}
+                    <div className="space-y-2 mb-6">
+                      {/* Option 1: SI */}
+                      <motion.button
+                        onClick={handleEnter}
+                        onMouseEnter={() => setSelectedOption(0)}
+                        className="w-full text-left px-4 py-2 cursor-pointer"
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <motion.span
+                            animate={{
+                              opacity: selectedOption === 0 ? [1, 0.3, 1] : 0.3,
+                            }}
+                            transition={{
+                              duration: 0.5,
+                              repeat: selectedOption === 0 ? Infinity : 0,
+                            }}
+                            className="text-white font-bold"
+                          >
+                            {selectedOption === 0 ? "►" : " "}
+                          </motion.span>
+                          <span
+                            className={`tracking-wider ${
+                              selectedOption === 0
+                                ? "text-white"
+                                : "text-white/40"
+                            }`}
+                            style={{
+                              textShadow:
+                                selectedOption === 0
+                                  ? "0 0 10px rgba(255,255,255,0.5)"
+                                  : "none",
+                            }}
+                          >
+                            SÍ, ENTRAR
+                          </span>
+                        </div>
+                      </motion.button>
 
-                {/* Button border */}
-                <div
-                  className="relative px-10 py-4 border border-white/20 hover:border-white/40 transition-all duration-300"
-                  style={{
-                    background:
-                      "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%)",
-                  }}
-                >
-                  <span
-                    className="uppercase tracking-[0.3em] text-white/70 group-hover:text-white/90 transition-colors duration-300 select-none"
-                    style={{
-                      fontSize: "0.75rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    Entrar
-                  </span>
+                      {/* Option 2: NO (disabled/grayed) */}
+                      <div
+                        className="w-full text-left px-4 py-2 cursor-not-allowed"
+                        onMouseEnter={() => setSelectedOption(1)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-white/20 font-bold">
+                            {selectedOption === 1 ? "►" : " "}
+                          </span>
+                          <span className="tracking-wider text-white/20 line-through">
+                            NO, SALIR
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="text-center border-t border-white/10 pt-4">
+                      <motion.p
+                        animate={{ opacity: [0.3, 0.6, 0.3] }}
+                        transition={{ duration: 3, repeat: Infinity }}
+                        className="text-white/30 text-[10px] sm:text-xs tracking-wider uppercase"
+                      >
+                        Use auriculares para mejor experiencia
+                      </motion.p>
+                    </div>
+                  </div>
                 </div>
-              </motion.button>
 
-              {/* Subtle warning */}
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.5, duration: 1 }}
-                className="mt-8 text-white/20 select-none"
-                style={{
-                  fontSize: "0.65rem",
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Se recomienda usar auriculares
-              </motion.p>
+                {/* Corner decorations */}
+                <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-white/60" />
+                <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-white/60" />
+                <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white/60" />
+                <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white/60" />
+              </div>
             </motion.div>
 
-            {/* Scanlines */}
+            {/* Scanlines overlay */}
             <div
-              className="absolute inset-0 pointer-events-none opacity-[0.015]"
+              className="absolute inset-0 pointer-events-none opacity-[0.04]"
               style={{
                 backgroundImage:
                   "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,1) 2px, rgba(255,255,255,1) 4px)",
               }}
             />
+
+            {/* Flicker effect */}
+            <motion.div
+              animate={{
+                opacity: [0, 0.02, 0, 0.01, 0],
+              }}
+              transition={{
+                duration: 0.15,
+                repeat: Infinity,
+                repeatDelay: 3,
+              }}
+              className="absolute inset-0 bg-white pointer-events-none"
+            />
+
+            {/* VHS timestamp */}
+            <motion.div
+              animate={{ opacity: [0.5, 0.8, 0.5] }}
+              transition={{ duration: 1, repeat: Infinity }}
+              className="absolute bottom-6 right-6 font-mono text-white/40 text-xs"
+              style={{ fontFamily: "'Courier New', monospace" }}
+            >
+              REC ●
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
